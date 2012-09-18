@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 
 import cv
+from math import sqrt
 
 class Target:
 
     def __init__(self):
         self.capture = cv.CaptureFromCAM(0)
         cv.NamedWindow("Target", 1)
+        
+    
 
     def run(self):
         # Capture first frame to get size
@@ -15,13 +18,13 @@ class Target:
         color_image = cv.CreateImage(cv.GetSize(frame), 8, 3)
         grey_image = cv.CreateImage(cv.GetSize(frame), cv.IPL_DEPTH_8U, 1)
         moving_average = cv.CreateImage(cv.GetSize(frame), cv.IPL_DEPTH_32F, 3)
+        
+        particles = []
 
         first = True
 
         while True:
-            closest_to_left = cv.GetSize(frame)[0]
-            closest_to_right = cv.GetSize(frame)[1]
-
+            #get a frame to work with
             color_image = cv.QueryFrame(self.capture)
 
             # Smooth to get rid of false positives
@@ -50,34 +53,75 @@ class Target:
             # Dilate and erode to get people blobs
             cv.Dilate(grey_image, grey_image, None, 18)
             cv.Erode(grey_image, grey_image, None, 10)
-
+            
+            #get the contours (segmented objects)
             storage = cv.CreateMemStorage(0)
             contour = cv.FindContours(grey_image, storage, cv.CV_RETR_CCOMP, cv.CV_CHAIN_APPROX_SIMPLE)
-            points = []
-
+            
+            centroids = []
+            
             while contour:
+                #get the bounding box
                 bound_rect = cv.BoundingRect(list(contour))
+                #assume the centre of the box is the centre of the blob (roughly true)
+                centroids.append((bound_rect[0] + bound_rect[2] /2, bound_rect[1] + bound_rect[3] /2))
                 contour = contour.h_next()
-
-                pt1 = (bound_rect[0], bound_rect[1])
-                pt2 = (bound_rect[0] + bound_rect[2], bound_rect[1] + bound_rect[3])
-                points.append(pt1)
-                points.append(pt2)
-                cv.Rectangle(color_image, pt1, pt2, cv.CV_RGB(255,0,0), 1)
-
-            if len(points):
-                center_point = reduce(lambda a, b: ((a[0] + b[0]) / 2, (a[1] + b[1]) / 2), points)
-                cv.Circle(color_image, center_point, 40, cv.CV_RGB(255, 255, 255), 1)
-                cv.Circle(color_image, center_point, 30, cv.CV_RGB(255, 100, 0), 1)
-                cv.Circle(color_image, center_point, 20, cv.CV_RGB(255, 255, 255), 1)
-                cv.Circle(color_image, center_point, 10, cv.CV_RGB(255, 100, 0), 1)
-
+                
+            
+            for i in centroids:
+                #each new centroid is an array of:
+                centroid = []
+                centroid.append(i) #the point
+                centroid.append(1) #the life
+                
+                shortest_distance = 100
+                for j in centroids:
+                    if i != j:
+                        if self.calculateDistance(i,j) < shortest_distance:
+                            shortest_distance = self.calculateDistance(i,j)
+                colour = self.chooseColour(shortest_distance) 
+                
+                centroid.append(colour) #and the colour based on distance
+                particles.append(centroid) #and gets added to our list of particles
+            
+                #cv.Circle(color_image, i, 10, self.chooseColour(), 30)
+             
+            #now that we have these nice coloured particles    
+            for i in particles:
+                #if they aren't too old, draw them
+                if i[1] < 20:
+                    cv.Circle(color_image, i[0], i[1], i[2], -1)
+                    i[1] += 2 #and age them
+                else:
+                    #otherwise kill them
+                    particles.remove(i)
+            
+            
             cv.ShowImage("Target", color_image)
+            
 
             # Listen for ESC key
-            c = cv.WaitKey(7) % 0x100
+            c = cv.WaitKey(10) % 0x100
             if c == 27:
                 break
+
+
+    def calculateDistance(self, position_a, position_b):
+        dist = sqrt( (position_b[0] - position_b[0])**2 + (position_b[1] - position_a[1])**2 )
+        return dist
+                
+    def chooseColour(self, distance):
+#        red = 255
+#        green = 255
+#        blue = 255
+#        red = randint(0,255)
+#        green = randint(0,255)
+#        blue = randint(0,255)
+        red = 255 - (distance * 2)
+        green = 0 + (distance * 2)
+        blue = 0 + (distance * 2)
+        return cv.CV_RGB(red, green, blue)
+        
 
 if __name__=="__main__":
     t = Target()
