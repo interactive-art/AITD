@@ -2,6 +2,7 @@
 
 import cv
 from math import sqrt
+from random import randint
 
 class Target:
 
@@ -57,6 +58,8 @@ class Target:
             #get the contours (segmented objects)
             storage = cv.CreateMemStorage(0)
             contour = cv.FindContours(grey_image, storage, cv.CV_RETR_CCOMP, cv.CV_CHAIN_APPROX_SIMPLE)
+            
+            #cv.DrawContours(color_image, contour, cv.CV_RGB(255,0,0), cv.CV_RGB(0,255,0), 9, cv.CV_FILLED)
             
             centroids = []
             
@@ -117,6 +120,9 @@ class Target:
 #        red = randint(0,255)
 #        green = randint(0,255)
 #        blue = randint(0,255)
+#        red = 255 - randint(distance *2 - 30, distance *2 +30)
+#        blue = 0 + randint(distance *2 - 30, distance *2 +30)
+#        green = 0 + (randint(distance *2 - 30, distance *2 +30))
         red = 255 - (distance * 2)
         green = 0 + (distance * 2)
         blue = 0 + (distance * 2)
