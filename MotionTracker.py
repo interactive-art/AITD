@@ -3,6 +3,10 @@
 import cv
 from math import sqrt
 from random import randint
+from ServerConnection import *
+
+# boolean to send data to server or not
+CONNECT_TO_SERVER = True
 
 class Target:
 
@@ -13,6 +17,9 @@ class Target:
         cv.SetCaptureProperty( self.capture, cv.CV_CAP_PROP_FRAME_WIDTH, 640 )
         cv.SetCaptureProperty( self.capture, cv.CV_CAP_PROP_FRAME_HEIGHT, 480 )
         
+        # create a connection to the server
+        if CONNECT_TO_SERVER:
+            self.server = ServerConnection('localhost', 8887)
     
 
     def run(self):
@@ -62,7 +69,7 @@ class Target:
             storage = cv.CreateMemStorage(0)
             contour = cv.FindContours(grey_image, storage, cv.CV_RETR_CCOMP, cv.CV_CHAIN_APPROX_SIMPLE)
             
-            #cv.DrawContours(color_image, contour, cv.CV_RGB(255,0,0), cv.CV_RGB(0,255,0), 9, cv.CV_FILLED)
+            cv.DrawContours(color_image, contour, cv.CV_RGB(255,0,0), cv.CV_RGB(0,255,0), 9, cv.CV_FILLED)
             
             centroids = []
             
@@ -93,6 +100,7 @@ class Target:
                 #cv.Circle(color_image, i, 10, self.chooseColour(), 30)
              
             #now that we have these nice coloured particles    
+            """
             for i in particles:
                 #if they aren't too old, draw them
                 if i[1] < 20:
@@ -101,6 +109,10 @@ class Target:
                 else:
                     #otherwise kill them
                     particles.remove(i)
+            """
+            # send latest data to server
+            if CONNECT_TO_SERVER:
+                self.server.send_points(centroids)
             
             
             cv.ShowImage("Target", color_image)
