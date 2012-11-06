@@ -19,6 +19,12 @@ class ServerConnection:
 
         
 
+    def send_resolution(self, width, height):
+        try:
+            self.socket.sendall(pickle.dumps(( width,height )))
+        except socket.error:
+            print 'send_resolution failed'
+            sys.exit();
         
         
     def send_points(self, points):

@@ -26,6 +26,7 @@ class Target:
         # create a connection to the server
         if CONNECT_TO_SERVER:
             self.server = ServerConnection('localhost', 8887)
+            self.server.send_resolution(ROI_WIDTH, ROI_HEIGHT)
     
 
     def run(self):
