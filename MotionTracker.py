@@ -18,7 +18,8 @@ class Target:
 
     def __init__(self):
         self.capture = cv.CaptureFromCAM(0)
-        cv.NamedWindow("Target", 1)
+        if DEBUG:
+            cv.NamedWindow("Target", 1)
         # set camera resolution
         #cv.SetCaptureProperty( self.capture, cv.CV_CAP_PROP_FRAME_WIDTH, 640 )
         #cv.SetCaptureProperty( self.capture, cv.CV_CAP_PROP_FRAME_HEIGHT, 480 )
