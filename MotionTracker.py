@@ -7,6 +7,7 @@ from ServerConnection import *
 
 # boolean to send data to server or not
 CONNECT_TO_SERVER = True
+DEBUG = True
 ROI_X_POS = 20
 ROI_Y_POS = 20
 ROI_WIDTH = 600
@@ -80,7 +81,8 @@ class Target:
             storage = cv.CreateMemStorage(0)
             contour = cv.FindContours(grey_image, storage, cv.CV_RETR_CCOMP, cv.CV_CHAIN_APPROX_SIMPLE)
             
-            cv.DrawContours(color_image, contour, cv.CV_RGB(255,0,0), cv.CV_RGB(0,255,0), 9, cv.CV_FILLED)
+            if DEBUG:
+                cv.DrawContours(color_image, contour, cv.CV_RGB(255,0,0), cv.CV_RGB(0,255,0), 9, cv.CV_FILLED)
             
             centroids = []
             
@@ -91,24 +93,24 @@ class Target:
                 centroids.append((bound_rect[0] + bound_rect[2] /2, bound_rect[1] + bound_rect[3] /2))
                 contour = contour.h_next()
                 
-            
-            for i in centroids:
-                #each new centroid is an array of:
-                centroid = []
-                centroid.append(i) #the point
-                centroid.append(1) #the life
+            if DEBUG:
+                for i in centroids:
+                    #each new centroid is an array of:
+                    centroid = []
+                    centroid.append(i) #the point
+                    centroid.append(1) #the life
+                    
+                    shortest_distance = 100
+                    for j in centroids:
+                        if i != j:
+                            if self.calculateDistance(i,j) < shortest_distance:
+                                shortest_distance = self.calculateDistance(i,j)
+                    colour = self.chooseColour(shortest_distance) 
+                    
+                    centroid.append(colour) #and the colour based on distance
+                    particles.append(centroid) #and gets added to our list of particles
                 
-                shortest_distance = 100
-                for j in centroids:
-                    if i != j:
-                        if self.calculateDistance(i,j) < shortest_distance:
-                            shortest_distance = self.calculateDistance(i,j)
-                colour = self.chooseColour(shortest_distance) 
-                
-                centroid.append(colour) #and the colour based on distance
-                particles.append(centroid) #and gets added to our list of particles
-            
-                #cv.Circle(color_image, i, 10, self.chooseColour(), 30)
+                    #cv.Circle(color_image, i, 10, self.chooseColour(), 30)
              
             #now that we have these nice coloured particles    
             """
@@ -125,8 +127,8 @@ class Target:
             if CONNECT_TO_SERVER:
                 self.server.send_points(centroids)
             
-            
-            cv.ShowImage("Target", color_image)
+            if DEBUG: # only show window when we are debugging
+                cv.ShowImage("Target", color_image)
             
 
             # Listen for ESC key
