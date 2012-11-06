@@ -12,6 +12,7 @@ ROI_Y_POS = 20
 ROI_WIDTH = 600
 ROI_HEIGHT = 600
 
+
 class Target:
 
     def __init__(self):
@@ -34,6 +35,8 @@ class Target:
         color_image = cv.CreateImage(cv.GetSize(frame), 8, 3)
         grey_image = cv.CreateImage(cv.GetSize(frame), cv.IPL_DEPTH_8U, 1)
         moving_average = cv.CreateImage(cv.GetSize(frame), cv.IPL_DEPTH_32F, 3)
+        
+        THRESHOLD = 70
         
         particles = []
 
@@ -67,7 +70,7 @@ class Target:
             cv.CvtColor(difference, grey_image, cv.CV_RGB2GRAY)
 
             # Convert the image to black and white.
-            cv.Threshold(grey_image, grey_image, 70, 255, cv.CV_THRESH_BINARY)
+            cv.Threshold(grey_image, grey_image, THRESHOLD, 255, cv.CV_THRESH_BINARY)
 
             # Dilate and erode to get people blobs
             cv.Dilate(grey_image, grey_image, None, 18)
@@ -130,6 +133,17 @@ class Target:
             c = cv.WaitKey(10) % 0x100
             if c == 27:
                 break
+            # For adjustable thresholding based on ambient contrast
+            elif c == 171:
+                if THRESHOLD < 255:
+                    THRESHOLD += 10
+                else:
+                    THRESHOLD = 255
+            elif c == 173:
+                if THRESHOLD > 0:
+                    THRESHOLD -= 10
+                else:
+                    THRESHOLD = 0
 
 
     def calculateDistance(self, position_a, position_b):
