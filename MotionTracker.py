@@ -7,6 +7,10 @@ from ServerConnection import *
 
 # boolean to send data to server or not
 CONNECT_TO_SERVER = True
+ROI_X_POS = 20
+ROI_Y_POS = 20
+ROI_WIDTH = 600
+ROI_HEIGHT = 600
 
 class Target:
 
@@ -14,8 +18,8 @@ class Target:
         self.capture = cv.CaptureFromCAM(0)
         cv.NamedWindow("Target", 1)
         # set camera resolution
-        cv.SetCaptureProperty( self.capture, cv.CV_CAP_PROP_FRAME_WIDTH, 640 )
-        cv.SetCaptureProperty( self.capture, cv.CV_CAP_PROP_FRAME_HEIGHT, 480 )
+        #cv.SetCaptureProperty( self.capture, cv.CV_CAP_PROP_FRAME_WIDTH, 640 )
+        #cv.SetCaptureProperty( self.capture, cv.CV_CAP_PROP_FRAME_HEIGHT, 480 )
         
         # create a connection to the server
         if CONNECT_TO_SERVER:
@@ -25,6 +29,7 @@ class Target:
     def run(self):
         # Capture first frame to get size
         frame = cv.QueryFrame(self.capture)
+        cv.SetImageROI(frame, (ROI_X_POS, ROI_Y_POS, ROI_WIDTH, ROI_HEIGHT) )
         frame_size = cv.GetSize(frame)
         color_image = cv.CreateImage(cv.GetSize(frame), 8, 3)
         grey_image = cv.CreateImage(cv.GetSize(frame), cv.IPL_DEPTH_8U, 1)
@@ -37,6 +42,9 @@ class Target:
         while True:
             #get a frame to work with
             color_image = cv.QueryFrame(self.capture)
+            
+            # Set an ROI so that we can cut the tree branches from the FOV
+            cv.SetImageROI(color_image, (ROI_X_POS, ROI_Y_POS, ROI_WIDTH, ROI_HEIGHT) )
 
             # Smooth to get rid of false positives
             cv.Smooth(color_image, color_image, cv.CV_GAUSSIAN, 3, 0)
