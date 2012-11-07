@@ -8,10 +8,10 @@ from ServerConnection import *
 # boolean to send data to server or not
 CONNECT_TO_SERVER = True
 DEBUG = True
-ROI_X_POS = 20
-ROI_Y_POS = 20
-ROI_WIDTH = 600
-ROI_HEIGHT = 600
+ROI_X_POS = 0
+ROI_Y_POS = 0
+ROI_WIDTH = 640
+ROI_HEIGHT = 480
 
 
 class Target:
@@ -21,8 +21,8 @@ class Target:
         if DEBUG:
             cv.NamedWindow("Target", 1)
         # set camera resolution
-        #cv.SetCaptureProperty( self.capture, cv.CV_CAP_PROP_FRAME_WIDTH, 640 )
-        #cv.SetCaptureProperty( self.capture, cv.CV_CAP_PROP_FRAME_HEIGHT, 480 )
+        cv.SetCaptureProperty( self.capture, cv.CV_CAP_PROP_FRAME_WIDTH, 640 )
+        cv.SetCaptureProperty( self.capture, cv.CV_CAP_PROP_FRAME_HEIGHT, 480 )
         
         # create a connection to the server
         if CONNECT_TO_SERVER:
