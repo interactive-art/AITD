@@ -156,7 +156,10 @@ class Target:
                 
             # save latest image
             bgImage = cv2array(color_image)
+            bgImageSize = cv.GetSize(color_image)
             self.display_image = bgImage
+            self.display_image_width = bgImageSize[0]
+            self.display_image_height = bgImageSize[1]
             
             
             if DEBUG: # only show window when we are debugging
