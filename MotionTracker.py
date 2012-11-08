@@ -109,7 +109,7 @@ class Target:
             contour = cv.FindContours(grey_image, storage, cv.CV_RETR_CCOMP, cv.CV_CHAIN_APPROX_SIMPLE)
             
             if DEBUG:
-                cv.DrawContours(color_image, contour, cv.CV_RGB(255,0,0), cv.CV_RGB(0,255,0), 9, cv.CV_FILLED)
+                cv.DrawContours(color_image, contour, cv.CV_RGB(255,0,0), cv.CV_RGB(0,255,0), 9)#, cv.CV_FILLED)
             
             centroids = []
             
