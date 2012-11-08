@@ -4,6 +4,10 @@ import cv
 from math import sqrt
 from random import randint
 from ServerConnection import *
+import numpy
+from OpenGL.GL import *
+from OpenGL.GLUT import *
+from OpenGL.GLU import *
 
 # boolean to send data to server or not
 CONNECT_TO_SERVER = True
@@ -14,6 +18,25 @@ ROI_WIDTH = 640
 ROI_HEIGHT = 480
 
 
+def cv2array(im): 
+    depth2dtype = { 
+        cv.IPL_DEPTH_8U: 'uint8', 
+        cv.IPL_DEPTH_8S: 'int8', 
+        cv.IPL_DEPTH_16U: 'uint16', 
+        cv.IPL_DEPTH_16S: 'int16', 
+        cv.IPL_DEPTH_32S: 'int32', 
+        cv.IPL_DEPTH_32F: 'float32', 
+        cv.IPL_DEPTH_64F: 'float64', 
+    } 
+
+    arrdtype=im.depth 
+    a = numpy.fromstring( 
+        im.tostring(), 
+        dtype=depth2dtype[im.depth], 
+        count=im.width*im.height*im.nChannels) 
+    a.shape = (im.height,im.width,im.nChannels) 
+    return a
+
 class Target:
 
     def __init__(self):
@@ -23,6 +46,8 @@ class Target:
         # set camera resolution
         cv.SetCaptureProperty( self.capture, cv.CV_CAP_PROP_FRAME_WIDTH, 640 )
         cv.SetCaptureProperty( self.capture, cv.CV_CAP_PROP_FRAME_HEIGHT, 480 )
+        
+        self.display_image = None
         
         # create a connection to the server
         if CONNECT_TO_SERVER:
@@ -128,6 +153,11 @@ class Target:
             # send latest data to server
             if CONNECT_TO_SERVER:
                 self.server.send_points(centroids)
+                
+            # save latest image
+            bgImage = cv2array(color_image)
+            self.display_image = bgImage
+            
             
             if DEBUG: # only show window when we are debugging
                 cv.ShowImage("Target", color_image)
@@ -136,7 +166,7 @@ class Target:
             # Listen for ESC key
             c = cv.WaitKey(10) % 0x100
             if c == 27:
-                break
+                sys.exit()
             # For adjustable thresholding based on ambient contrast
             elif c == 171:
                 if THRESHOLD < 255:
