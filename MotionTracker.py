@@ -155,6 +155,7 @@ class Target:
                 self.server.send_points(centroids)
                 
             # save latest image
+            cv.CvtColor(color_image, color_image, cv.CV_BGR2RGB)
             bgImage = cv2array(color_image)
             bgImageSize = cv.GetSize(color_image)
             self.display_image = bgImage
